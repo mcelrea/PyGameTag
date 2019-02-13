@@ -1,4 +1,5 @@
 import pygame #needed to import the pygame framework
+import random
 
 #problem: pygame only tests rectangle collision, players are circles
 #solution: create hidden rectangle that follows player, check that rectangle for collision
@@ -96,11 +97,26 @@ def checkForCollision(player, mapWalls):
     return False
 
 def drawPlayer(player):
-    pygame.draw.circle(screen,
-                       player[2],
-                       (player[0], player[1]),
-                       17)
+    if player[4] == False:
+        pygame.draw.circle(screen,
+                           player[2],
+                           (player[0], player[1]),
+                           17)
+    else:
+        pygame.draw.circle(screen,
+                           (255,255,255),
+                           (player[0], player[1]),
+                           17)
     #pygame.draw.rect(screen,(255,255,255), pygame.Rect(player[0]-17, player[1]-17,34,34), 1)
+
+#randomly decide who is it BEFORE the game starts
+whoIsIt = random.randint(0,2) #0,1,2
+if whoIsIt == 0:
+    redPlayer[4] = True
+elif whoIsIt == 1:
+    greenPlayer[4] = True
+elif whoIsIt == 2:
+    bluePlayer[4] = True
 
 #continually run the game loop until done is switch to True
 while not done:
