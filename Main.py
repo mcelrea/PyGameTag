@@ -7,7 +7,9 @@ import random
 
 #initializes all the modules required for PyGame
 pygame.init()
+pygame.font.init()
 clock = pygame.time.Clock()
+scoreFont = pygame.font.SysFont('Comic Sans MS', 20)
 
 #launch a window of the desired size, screen equals a Surface which is an object
 #we can perform graphical operations on. Think of a Surface as a blank piece of paper
@@ -16,10 +18,13 @@ screen = pygame.display.set_mode((1200, 900))
 #variable to control the game loop, keeps our code running until we flip it to True
 done = False
 
-#player attributes (x, y, color, speed, it, reversed, score, up, down, left, right)
-redPlayer = [100, 100, (255,0,0), 5, False, False, 0, pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d]
-bluePlayer = [300, 300, (0,0,255), 5, False, False, 0, pygame.K_i, pygame.K_k, pygame.K_j, pygame.K_l]
-greenPlayer = [600, 600, (0,255,0), 5, False, False, 0, pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT]
+tagDelay = 1000 #1000 = 1 second
+nextTagAllowed = 1000
+
+#player attributes (x, y, color, speed, it, reversed, score, up, down, left, right, score)
+redPlayer = [100, 100, (255,0,0), 5, False, False, 0, pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d, 0]
+bluePlayer = [300, 300, (0,0,255), 5, False, False, 0, pygame.K_i, pygame.K_k, pygame.K_j, pygame.K_l, 0]
+greenPlayer = [600, 600, (0,255,0), 5, False, False, 0, pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT, 0]
 
 #create the maps
 map1Background = [pygame.Rect(0, 0, 400, 900),
@@ -44,6 +49,7 @@ def drawMap(mapBack, mapWalls):
         pygame.draw.rect(screen, (255,0,255), mapWalls[i], 0)
 
 
+# Create Task: Algorithm within an Algorithm
 def checkForInput(player):
     oldx = player[0]
     oldy = player[1]
@@ -73,6 +79,44 @@ def checkForInput(player):
     if playerOffScreen == True:
         player[0] = oldx
         player[1] = oldy
+
+
+def checkForTag():
+    global nextTagAllowed
+    if pygame.time.get_ticks() > nextTagAllowed:
+        redHitBox = pygame.Rect(redPlayer[0] - 17, redPlayer[1] - 17, 34, 34)
+        blueHitBox = pygame.Rect(bluePlayer[0] - 17, bluePlayer[1] - 17, 34, 34)
+        greenHitBox = pygame.Rect(greenPlayer[0] - 17, greenPlayer[1] - 17, 34, 34)
+        if redPlayer[4] == True:
+            if redHitBox.colliderect(blueHitBox):
+                bluePlayer[4] = True
+                redPlayer[4] = False
+                nextTagAllowed = pygame.time.get_ticks() + tagDelay
+            elif redHitBox.colliderect(greenHitBox):
+                greenPlayer[4] = True
+                redPlayer[4] = False
+                nextTagAllowed = pygame.time.get_ticks() + tagDelay
+        elif bluePlayer[4] == True:
+            if blueHitBox.colliderect(redHitBox):
+                redPlayer[4] = True
+                bluePlayer[4] = False
+                nextTagAllowed = pygame.time.get_ticks() + tagDelay
+            elif blueHitBox.colliderect(greenHitBox):
+                greenPlayer[4] = True
+                bluePlayer[4] = False
+                nextTagAllowed = pygame.time.get_ticks() + tagDelay
+        elif greenPlayer[4] == True:
+            if greenHitBox.colliderect(blueHitBox):
+                bluePlayer[4] = True
+                greenPlayer[4] = False
+                nextTagAllowed = pygame.time.get_ticks() + tagDelay
+            elif greenHitBox.colliderect(redHitBox):
+                redPlayer[4] = True
+                greenPlayer[4] = False
+                nextTagAllowed = pygame.time.get_ticks() + tagDelay
+
+
+
 
 def isPlayerOffScreen(player):
     if player[0] < 17:
@@ -118,6 +162,30 @@ elif whoIsIt == 1:
 elif whoIsIt == 2:
     bluePlayer[4] = True
 
+def updateScore():
+    if redPlayer[4] == True:
+        redPlayer[11] += 1
+    elif greenPlayer[4] == True:
+        greenPlayer[11] += 1
+    elif bluePlayer[4] == True:
+        bluePlayer[11] += 1
+
+def drawScore():
+    textSurface = scoreFont.render("Red Score: " + str(redPlayer[11]),
+                                   False,
+                                   (255,0,0))
+    screen.blit(textSurface, (10, 10))
+
+    textSurface = scoreFont.render("Green Score: " + str(greenPlayer[11]),
+                                   False,
+                                   (0, 255, 0))
+    screen.blit(textSurface, (580, 10))
+
+    textSurface = scoreFont.render("Blue Score: " + str(bluePlayer[11]),
+                                   False,
+                                   (0, 0, 255))
+    screen.blit(textSurface, (1000, 10))
+
 #continually run the game loop until done is switch to True
 while not done:
 
@@ -136,11 +204,15 @@ while not done:
     checkForInput(bluePlayer)
     checkForInput(greenPlayer)
 
+    checkForTag()
+    updateScore()
+
     #draw all the graphics
     drawMap(map1Background, map1Walls)
     drawPlayer(redPlayer)
     drawPlayer(greenPlayer)
     drawPlayer(bluePlayer)
+    drawScore()
 
     #Show any graphical updates you have made to the screen
     pygame.display.flip()
