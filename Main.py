@@ -10,6 +10,7 @@ pygame.init()
 pygame.font.init()
 clock = pygame.time.Clock()
 scoreFont = pygame.font.SysFont('Comic Sans MS', 20)
+gameOverFont = pygame.font.SysFont('Comic Sans MS', 160)
 gameStatus = "playing"
 
 #launch a window of the desired size, screen equals a Surface which is an object
@@ -34,8 +35,8 @@ nextTagAllowed = 1000
 #                   0  1    2      3     4    5        6      7   8     9      10    11         12              13                14                 15
 #player attributes (x, y, color, speed, it, reversed, score, up, down, left, right, score, hasSpeedPowerUP, timeGotSpeed, hasReversedControls, timeGotReversed)
 redPlayer = [100, 100, (255,0,0), 7, False, False, 0, pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d, 0, False, 0, False, 0]
-bluePlayer = [300, 300, (0,0,255), 7, False, False, 0, pygame.K_i, pygame.K_k, pygame.K_j, pygame.K_l, 0, False, 0, False, 0]
-greenPlayer = [600, 600, (0,255,0), 7, False, False, 0, pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT, 0, False, 0, False, 0]
+bluePlayer = [100, 800, (0,0,255), 7, False, False, 0, pygame.K_i, pygame.K_k, pygame.K_j, pygame.K_l, 0, False, 0, False, 0]
+greenPlayer = [1050, 400, (0,255,0), 7, False, False, 0, pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT, 0, False, 0, False, 0]
 
 #create the maps
 map1Background = [pygame.Rect(0, 0, 400, 900),
@@ -212,14 +213,15 @@ def drawPlayer(player):
                            17)
     #pygame.draw.rect(screen,(255,255,255), pygame.Rect(player[0]-17, player[1]-17,34,34), 1)
 
-#randomly decide who is it BEFORE the game starts
-whoIsIt = random.randint(0,2) #0,1,2
-if whoIsIt == 0:
-    redPlayer[4] = True
-elif whoIsIt == 1:
-    greenPlayer[4] = True
-elif whoIsIt == 2:
-    bluePlayer[4] = True
+def chooseIt():
+    #randomly decide who is it BEFORE the game starts
+    whoIsIt = random.randint(0,2) #0,1,2
+    if whoIsIt == 0:
+        redPlayer[4] = True
+    elif whoIsIt == 1:
+        greenPlayer[4] = True
+    elif whoIsIt == 2:
+        bluePlayer[4] = True
 
 def updateScore():
     if redPlayer[4] == True:
@@ -245,6 +247,7 @@ def drawScore():
                                    (0, 0, 255))
     screen.blit(textSurface, (1000, 10))
 
+chooseIt()
 #continually run the game loop until done is switch to True
 while not done:
 
@@ -261,14 +264,24 @@ while not done:
             if event.key == pygame.K_SPACE:
                 if gameStatus == "gameOver":
                     redPlayer[11] = 0
+                    redPlayer[0] = 100
+                    redPlayer[1] = 100
+                    redPlayer[4] = False
                     bluePlayer[11] = 0
+                    bluePlayer[0] = 100
+                    bluePlayer[1] = 800
+                    bluePlayer[4] = False
                     greenPlayer[11] = 0
+                    greenPlayer[0] = 1050
+                    greenPlayer[1] = 400
+                    greenPlayer[4] = False
                     redPlayer[3] = 7
                     redPlayer[12] = False
                     bluePlayer[3] = 7
                     bluePlayer[12] = False
                     greenPlayer[3] = 7
                     greenPlayer[12] = False
+                    chooseIt()
                     gameStatus = "playing"
 
     if gameStatus == "playing":
@@ -292,8 +305,25 @@ while not done:
         drawPlayer(bluePlayer)
         drawScore()
 
-        if redPlayer[11] >= 30000 or bluePlayer[11] >= 30000 or greenPlayer[11] >= 30000:
+        if redPlayer[11] >= 3000 or bluePlayer[11] >= 3000 or greenPlayer[11] >= 3000:
             gameStatus = "gameOver"
+
+    if gameStatus == "gameOver":
+        if redPlayer[11] < bluePlayer[11] and redPlayer[11] < greenPlayer[11]:
+            textSurface = gameOverFont.render("Red Player Wins",
+                                           False,
+                                           (255, 0, 0))
+            screen.blit(textSurface, (100, 100))
+        elif bluePlayer[11] < redPlayer[11] and bluePlayer[11] < greenPlayer[11]:
+            textSurface = gameOverFont.render("Blue Player Wins",
+                                           False,
+                                           (0, 0, 255))
+            screen.blit(textSurface, (100, 100))
+        elif greenPlayer[11] < redPlayer[11] and greenPlayer[11] < bluePlayer[11]:
+            textSurface = gameOverFont.render("Green Player Wins",
+                                           False,
+                                           (0, 255, 0))
+            screen.blit(textSurface, (100, 100))
 
     #Show any graphical updates you have made to the screen
     pygame.display.flip()
