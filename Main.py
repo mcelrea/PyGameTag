@@ -10,6 +10,7 @@ pygame.init()
 pygame.font.init()
 clock = pygame.time.Clock()
 scoreFont = pygame.font.SysFont('Comic Sans MS', 20)
+gameStatus = "playing"
 
 #launch a window of the desired size, screen equals a Surface which is an object
 #we can perform graphical operations on. Think of a Surface as a blank piece of paper
@@ -18,13 +19,23 @@ screen = pygame.display.set_mode((1200, 900))
 #variable to control the game loop, keeps our code running until we flip it to True
 done = False
 
+#speed powerup variables
+speedPowerX = 0
+speedPowerY = 0
+speedOnScreenTime = 5000
+speedOnScreenDelay = 5000
+nextTimeOnScreen = 5000
+speedPowerAlive = False
+speedBoostAffectTime = 5000
+
 tagDelay = 1000 #1000 = 1 second
 nextTagAllowed = 1000
 
-#player attributes (x, y, color, speed, it, reversed, score, up, down, left, right, score)
-redPlayer = [100, 100, (255,0,0), 5, False, False, 0, pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d, 0]
-bluePlayer = [300, 300, (0,0,255), 5, False, False, 0, pygame.K_i, pygame.K_k, pygame.K_j, pygame.K_l, 0]
-greenPlayer = [600, 600, (0,255,0), 5, False, False, 0, pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT, 0]
+#                   0  1    2      3     4    5        6      7   8     9      10    11         12              13                14                 15
+#player attributes (x, y, color, speed, it, reversed, score, up, down, left, right, score, hasSpeedPowerUP, timeGotSpeed, hasReversedControls, timeGotReversed)
+redPlayer = [100, 100, (255,0,0), 7, False, False, 0, pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d, 0, False, 0, False, 0]
+bluePlayer = [300, 300, (0,0,255), 7, False, False, 0, pygame.K_i, pygame.K_k, pygame.K_j, pygame.K_l, 0, False, 0, False, 0]
+greenPlayer = [600, 600, (0,255,0), 7, False, False, 0, pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT, 0, False, 0, False, 0]
 
 #create the maps
 map1Background = [pygame.Rect(0, 0, 400, 900),
@@ -49,6 +60,48 @@ def drawMap(mapBack, mapWalls):
         pygame.draw.rect(screen, (255,0,255), mapWalls[i], 0)
 
 
+def updateSpeedPowerUp():
+    global speedPowerAlive
+    global speedPowerX
+    global speedPowerY
+    global nextTimeOnScreen
+    redHitBox = pygame.Rect(redPlayer[0] - 17, redPlayer[1] - 17, 34, 34)
+    blueHitBox = pygame.Rect(bluePlayer[0] - 17, bluePlayer[1] - 17, 34, 34)
+    greenHitBox = pygame.Rect(greenPlayer[0] - 17, greenPlayer[1] - 17, 34, 34)
+    speedHitBox = pygame.Rect(speedPowerX, speedPowerY, 25, 25)
+    if speedPowerAlive == False:
+        if pygame.time.get_ticks() > nextTimeOnScreen:
+            speedPowerAlive = True
+            speedPowerX = random.randint(0, 1150)
+            speedPowerY = random.randint(0, 850)
+    if speedPowerAlive == True:
+        if greenHitBox.colliderect(speedHitBox):
+            greenPlayer[3] = 10 #set the increase the speed
+            greenPlayer[12] = True #set that the player has a speed boost
+            greenPlayer[13] = pygame.time.get_ticks() #time stamp when the player go the speed boost
+            speedPowerAlive = False
+            nextTimeOnScreen = pygame.time.get_ticks() + speedOnScreenDelay
+        elif blueHitBox.colliderect(speedHitBox):
+            bluePlayer[3] = 10 #set the increase the speed
+            bluePlayer[12] = True #set that the player has a speed boost
+            bluePlayer[13] = pygame.time.get_ticks() #time stamp when the player go the speed boost
+            speedPowerAlive = False
+            nextTimeOnScreen = pygame.time.get_ticks() + speedOnScreenDelay
+        elif redHitBox.colliderect(speedHitBox):
+            redPlayer[3] = 10 #set the increase the speed
+            redPlayer[12] = True #set that the player has a speed boost
+            redPlayer[13] = pygame.time.get_ticks() #time stamp when the player go the speed boost
+            speedPowerAlive = False
+            nextTimeOnScreen = pygame.time.get_ticks() + speedOnScreenDelay
+        if pygame.time.get_ticks() > nextTimeOnScreen+speedOnScreenTime:
+            speedPowerAlive = False
+            nextTimeOnScreen = pygame.time.get_ticks() + speedOnScreenDelay
+
+def drawSpeedPowerUp():
+    if speedPowerAlive == True:
+        pygame.draw.rect(screen, (255,255,0),
+                         pygame.Rect(speedPowerX,speedPowerY,25,25))
+
 # Create Task: Algorithm within an Algorithm
 def checkForInput(player):
     oldx = player[0]
@@ -57,16 +110,16 @@ def checkForInput(player):
     pressed = pygame.key.get_pressed()
     #check for up key being pressed
     if pressed[player[7]]:
-        player[1] -= 7
+        player[1] -= player[3]
     # check for down key being pressed
     if pressed[player[8]]:
-        player[1] += 7
+        player[1] += player[3]
     #check for left key being pressed
     if pressed[player[9]]:
-        player[0] -= 7
+        player[0] -= player[3]
     #check for right key being pressed
     if pressed[player[10]]:
-        player[0] += 7
+        player[0] += player[3]
 
     #check for collision with walls
     collision = checkForCollision(player,map1Walls)
@@ -80,6 +133,12 @@ def checkForInput(player):
         player[0] = oldx
         player[1] = oldy
 
+
+def updatePlayer(player):
+    if player[12] == True: #if they have the speed boost
+        if pygame.time.get_ticks() > player[13] + speedBoostAffectTime:
+            player[12] = False #player no longer has speed boost
+            player[3] = 7
 
 def checkForTag():
     global nextTagAllowed
@@ -198,21 +257,43 @@ while not done:
         #if the event is a click on the "X" close button
         if event.type == pygame.QUIT:
             done = True
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                if gameStatus == "gameOver":
+                    redPlayer[11] = 0
+                    bluePlayer[11] = 0
+                    greenPlayer[11] = 0
+                    redPlayer[3] = 7
+                    redPlayer[12] = False
+                    bluePlayer[3] = 7
+                    bluePlayer[12] = False
+                    greenPlayer[3] = 7
+                    greenPlayer[12] = False
+                    gameStatus = "playing"
 
-    #check for user input
-    checkForInput(redPlayer)
-    checkForInput(bluePlayer)
-    checkForInput(greenPlayer)
+    if gameStatus == "playing":
+        #check for user input
+        checkForInput(redPlayer)
+        checkForInput(bluePlayer)
+        checkForInput(greenPlayer)
 
-    checkForTag()
-    updateScore()
+        checkForTag()
+        updateScore()
+        updateSpeedPowerUp()
+        updatePlayer(redPlayer)
+        updatePlayer(bluePlayer)
+        updatePlayer(greenPlayer)
 
-    #draw all the graphics
-    drawMap(map1Background, map1Walls)
-    drawPlayer(redPlayer)
-    drawPlayer(greenPlayer)
-    drawPlayer(bluePlayer)
-    drawScore()
+        #draw all the graphics
+        drawMap(map1Background, map1Walls)
+        drawSpeedPowerUp()
+        drawPlayer(redPlayer)
+        drawPlayer(greenPlayer)
+        drawPlayer(bluePlayer)
+        drawScore()
+
+        if redPlayer[11] >= 30000 or bluePlayer[11] >= 30000 or greenPlayer[11] >= 30000:
+            gameStatus = "gameOver"
 
     #Show any graphical updates you have made to the screen
     pygame.display.flip()
