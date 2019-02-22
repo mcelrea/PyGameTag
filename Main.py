@@ -25,9 +25,18 @@ speedPowerX = 0
 speedPowerY = 0
 speedOnScreenTime = 5000
 speedOnScreenDelay = 5000
-nextTimeOnScreen = 5000
+speedNextTimeOnScreen = 5000
 speedPowerAlive = False
 speedBoostAffectTime = 5000
+
+#reverse powerup variables
+reversePowerX = 0
+reversePowerY = 0
+reverseOnScreenTime = 5000
+reverseOnScreenDelay = 5000
+reverseNextTimeOnScreen = 5000
+reversePowerAlive = False
+reverseBoostAffectTime = 5000
 
 tagDelay = 1000 #1000 = 1 second
 nextTagAllowed = 1000
@@ -60,18 +69,62 @@ def drawMap(mapBack, mapWalls):
     for i in range(0,len(mapWalls),1):
         pygame.draw.rect(screen, (255,0,255), mapWalls[i], 0)
 
+def updateReversePowerUp():
+    global reversePowerAlive
+    global reversePowerX
+    global reversePowerY
+    global reverseNextTimeOnScreen
+    redHitBox = pygame.Rect(redPlayer[0] - 17, redPlayer[1] - 17, 34, 34)
+    blueHitBox = pygame.Rect(bluePlayer[0] - 17, bluePlayer[1] - 17, 34, 34)
+    greenHitBox = pygame.Rect(greenPlayer[0] - 17, greenPlayer[1] - 17, 34, 34)
+    reverseHitBox = pygame.Rect(reversePowerX, reversePowerY, 25, 25)
+    if reversePowerAlive == False:
+        if pygame.time.get_ticks() > reverseNextTimeOnScreen:
+            reversePowerAlive = True
+            reversePowerX = random.randint(0, 1150)
+            reversePowerY = random.randint(0, 850)
+    if reversePowerAlive == True:
+        if greenHitBox.colliderect(reverseHitBox):
+            redPlayer[14] = True #set that the player has a reverse boost
+            redPlayer[15] = pygame.time.get_ticks() #time stamp when the player go the reverse boost
+            bluePlayer[14] = True  # set that the player has a reverse boost
+            bluePlayer[15] = pygame.time.get_ticks()  # time stamp when the player go the reverse boost
+            reversePowerAlive = False
+            reverseNextTimeOnScreen = pygame.time.get_ticks() + reverseOnScreenDelay
+        elif blueHitBox.colliderect(reverseHitBox):
+            redPlayer[14] = True #set that the player has a reverse boost
+            redPlayer[15] = pygame.time.get_ticks() #time stamp when the player go the reverse boost
+            greenPlayer[14] = True  # set that the player has a reverse boost
+            greenPlayer[15] = pygame.time.get_ticks()  # time stamp when the player go the reverse boost
+            reversePowerAlive = False
+            reverseNextTimeOnScreen = pygame.time.get_ticks() + reverseOnScreenDelay
+        elif redHitBox.colliderect(reverseHitBox):
+            bluePlayer[14] = True #set that the player has a reverse boost
+            bluePlayer[15] = pygame.time.get_ticks() #time stamp when the player go the reverse boost
+            greenPlayer[14] = True  # set that the player has a reverse boost
+            greenPlayer[15] = pygame.time.get_ticks()  # time stamp when the player go the reverse boost
+            reversePowerAlive = False
+            reverseNextTimeOnScreen = pygame.time.get_ticks() + reverseOnScreenDelay
+        if pygame.time.get_ticks() > reverseNextTimeOnScreen+reverseOnScreenTime:
+            reversePowerAlive = False
+            reverseNextTimeOnScreen = pygame.time.get_ticks() + reverseOnScreenDelay
+
+def drawReversePowerUp():
+    if reversePowerAlive == True:
+        pygame.draw.rect(screen, (50,255,100),
+                         pygame.Rect(reversePowerX,reversePowerY,25,25))
 
 def updateSpeedPowerUp():
     global speedPowerAlive
     global speedPowerX
     global speedPowerY
-    global nextTimeOnScreen
+    global speedNextTimeOnScreen
     redHitBox = pygame.Rect(redPlayer[0] - 17, redPlayer[1] - 17, 34, 34)
     blueHitBox = pygame.Rect(bluePlayer[0] - 17, bluePlayer[1] - 17, 34, 34)
     greenHitBox = pygame.Rect(greenPlayer[0] - 17, greenPlayer[1] - 17, 34, 34)
     speedHitBox = pygame.Rect(speedPowerX, speedPowerY, 25, 25)
     if speedPowerAlive == False:
-        if pygame.time.get_ticks() > nextTimeOnScreen:
+        if pygame.time.get_ticks() > speedNextTimeOnScreen:
             speedPowerAlive = True
             speedPowerX = random.randint(0, 1150)
             speedPowerY = random.randint(0, 850)
@@ -81,22 +134,22 @@ def updateSpeedPowerUp():
             greenPlayer[12] = True #set that the player has a speed boost
             greenPlayer[13] = pygame.time.get_ticks() #time stamp when the player go the speed boost
             speedPowerAlive = False
-            nextTimeOnScreen = pygame.time.get_ticks() + speedOnScreenDelay
+            speedNextTimeOnScreen = pygame.time.get_ticks() + speedOnScreenDelay
         elif blueHitBox.colliderect(speedHitBox):
             bluePlayer[3] = 10 #set the increase the speed
             bluePlayer[12] = True #set that the player has a speed boost
             bluePlayer[13] = pygame.time.get_ticks() #time stamp when the player go the speed boost
             speedPowerAlive = False
-            nextTimeOnScreen = pygame.time.get_ticks() + speedOnScreenDelay
+            speedNextTimeOnScreen = pygame.time.get_ticks() + speedOnScreenDelay
         elif redHitBox.colliderect(speedHitBox):
             redPlayer[3] = 10 #set the increase the speed
             redPlayer[12] = True #set that the player has a speed boost
             redPlayer[13] = pygame.time.get_ticks() #time stamp when the player go the speed boost
             speedPowerAlive = False
-            nextTimeOnScreen = pygame.time.get_ticks() + speedOnScreenDelay
-        if pygame.time.get_ticks() > nextTimeOnScreen+speedOnScreenTime:
+            speedNextTimeOnScreen = pygame.time.get_ticks() + speedOnScreenDelay
+        if pygame.time.get_ticks() > speedNextTimeOnScreen+speedOnScreenTime:
             speedPowerAlive = False
-            nextTimeOnScreen = pygame.time.get_ticks() + speedOnScreenDelay
+            speedNextTimeOnScreen = pygame.time.get_ticks() + speedOnScreenDelay
 
 def drawSpeedPowerUp():
     if speedPowerAlive == True:
@@ -109,18 +162,32 @@ def checkForInput(player):
     oldy = player[1]
 
     pressed = pygame.key.get_pressed()
-    #check for up key being pressed
-    if pressed[player[7]]:
-        player[1] -= player[3]
-    # check for down key being pressed
-    if pressed[player[8]]:
-        player[1] += player[3]
-    #check for left key being pressed
-    if pressed[player[9]]:
-        player[0] -= player[3]
-    #check for right key being pressed
-    if pressed[player[10]]:
-        player[0] += player[3]
+    if player[14] == False: #if they should move correctly
+        #check for up key being pressed
+        if pressed[player[7]]:
+            player[1] -= player[3]
+        # check for down key being pressed
+        if pressed[player[8]]:
+            player[1] += player[3]
+        #check for left key being pressed
+        if pressed[player[9]]:
+            player[0] -= player[3]
+        #check for right key being pressed
+        if pressed[player[10]]:
+            player[0] += player[3]
+    else:
+        # check for up key being pressed
+        if pressed[player[7]]:
+            player[1] += player[3]
+        # check for down key being pressed
+        if pressed[player[8]]:
+            player[1] -= player[3]
+        # check for left key being pressed
+        if pressed[player[9]]:
+            player[0] += player[3]
+        # check for right key being pressed
+        if pressed[player[10]]:
+            player[0] -= player[3]
 
     #check for collision with walls
     collision = checkForCollision(player,map1Walls)
@@ -140,6 +207,9 @@ def updatePlayer(player):
         if pygame.time.get_ticks() > player[13] + speedBoostAffectTime:
             player[12] = False #player no longer has speed boost
             player[3] = 7
+    if player[14] == True: #if they have reversed controls
+        if pygame.time.get_ticks() > player[15] + reverseBoostAffectTime:
+            player[14] = False #player no longer has speed boost
 
 def checkForTag():
     global nextTagAllowed
@@ -293,6 +363,7 @@ while not done:
         checkForTag()
         updateScore()
         updateSpeedPowerUp()
+        updateReversePowerUp()
         updatePlayer(redPlayer)
         updatePlayer(bluePlayer)
         updatePlayer(greenPlayer)
@@ -300,6 +371,7 @@ while not done:
         #draw all the graphics
         drawMap(map1Background, map1Walls)
         drawSpeedPowerUp()
+        drawReversePowerUp()
         drawPlayer(redPlayer)
         drawPlayer(greenPlayer)
         drawPlayer(bluePlayer)
