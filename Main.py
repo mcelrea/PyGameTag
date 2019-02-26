@@ -25,7 +25,7 @@ speedPowerX = 0
 speedPowerY = 0
 speedOnScreenTime = 5000
 speedOnScreenDelay = 5000
-speedNextTimeOnScreen = 5000
+speedNextTimeOnScreen = random.randint(3000,10000)
 speedPowerAlive = False
 speedBoostAffectTime = 5000
 
@@ -34,9 +34,20 @@ reversePowerX = 0
 reversePowerY = 0
 reverseOnScreenTime = 5000
 reverseOnScreenDelay = 5000
-reverseNextTimeOnScreen = 5000
+reverseNextTimeOnScreen = random.randint(3000,10000)
 reversePowerAlive = False
 reverseBoostAffectTime = 5000
+
+#change screen color powerup
+colorPowerX = 0
+colorPowerY = 0
+colorOnScreenTime = 5000
+colorOnScreenDelay = 5000
+colorNextTimeOnScreen = random.randint(10000,15000)
+colorPowerAlive = False
+colorBoostAffectTime = 7000
+backgroundColor = (0,0,0)
+revertColorTime = 0
 
 tagDelay = 1000 #1000 = 1 second
 nextTagAllowed = 1000
@@ -63,7 +74,7 @@ map1Walls = [pygame.Rect(400, 300, 170, 35),
 def drawMap(mapBack, mapWalls):
     #draw map background
     for i in range(0,len(mapBack),1):
-        pygame.draw.rect(screen, (0,0,0), mapBack[i], 0)
+        pygame.draw.rect(screen, backgroundColor, mapBack[i], 0)
 
     #draw map walls
     for i in range(0,len(mapWalls),1):
@@ -90,29 +101,72 @@ def updateReversePowerUp():
             bluePlayer[14] = True  # set that the player has a reverse boost
             bluePlayer[15] = pygame.time.get_ticks()  # time stamp when the player go the reverse boost
             reversePowerAlive = False
-            reverseNextTimeOnScreen = pygame.time.get_ticks() + reverseOnScreenDelay
+            reverseNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
         elif blueHitBox.colliderect(reverseHitBox):
             redPlayer[14] = True #set that the player has a reverse boost
             redPlayer[15] = pygame.time.get_ticks() #time stamp when the player go the reverse boost
             greenPlayer[14] = True  # set that the player has a reverse boost
             greenPlayer[15] = pygame.time.get_ticks()  # time stamp when the player go the reverse boost
             reversePowerAlive = False
-            reverseNextTimeOnScreen = pygame.time.get_ticks() + reverseOnScreenDelay
+            reverseNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
         elif redHitBox.colliderect(reverseHitBox):
             bluePlayer[14] = True #set that the player has a reverse boost
             bluePlayer[15] = pygame.time.get_ticks() #time stamp when the player go the reverse boost
             greenPlayer[14] = True  # set that the player has a reverse boost
             greenPlayer[15] = pygame.time.get_ticks()  # time stamp when the player go the reverse boost
             reversePowerAlive = False
-            reverseNextTimeOnScreen = pygame.time.get_ticks() + reverseOnScreenDelay
+            reverseNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
         if pygame.time.get_ticks() > reverseNextTimeOnScreen+reverseOnScreenTime:
             reversePowerAlive = False
-            reverseNextTimeOnScreen = pygame.time.get_ticks() + reverseOnScreenDelay
+            reverseNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
 
 def drawReversePowerUp():
     if reversePowerAlive == True:
         pygame.draw.rect(screen, (50,255,100),
                          pygame.Rect(reversePowerX,reversePowerY,25,25))
+
+def updateColorPowerUp():
+    global colorPowerAlive
+    global colorPowerX
+    global colorPowerY
+    global colorNextTimeOnScreen
+    global backgroundColor
+    global revertColorTime
+    redHitBox = pygame.Rect(redPlayer[0] - 17, redPlayer[1] - 17, 34, 34)
+    blueHitBox = pygame.Rect(bluePlayer[0] - 17, bluePlayer[1] - 17, 34, 34)
+    greenHitBox = pygame.Rect(greenPlayer[0] - 17, greenPlayer[1] - 17, 34, 34)
+    colorHitBox = pygame.Rect(colorPowerX, colorPowerY, 25, 25)
+    if pygame.time.get_ticks() > revertColorTime:
+        backgroundColor = (0,0,0)
+    if colorPowerAlive == False:
+        if pygame.time.get_ticks() > colorNextTimeOnScreen:
+            colorPowerAlive = True
+            colorPowerX = random.randint(0, 1150)
+            colorPowerY = random.randint(0, 850)
+    if colorPowerAlive == True:
+        if pygame.time.get_ticks() > colorNextTimeOnScreen+colorOnScreenTime:
+            colorPowerAlive = False
+            colorNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
+        if greenHitBox.colliderect(colorHitBox):
+            backgroundColor = (0,255,0)
+            revertColorTime = pygame.time.get_ticks() + colorBoostAffectTime
+            colorPowerAlive = False
+            colorNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
+        elif blueHitBox.colliderect(colorHitBox):
+            backgroundColor = (0,0,255)
+            revertColorTime = pygame.time.get_ticks() + colorBoostAffectTime
+            colorPowerAlive = False
+            colorNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
+        elif redHitBox.colliderect(colorHitBox):
+            backgroundColor = (255,0,0)
+            revertColorTime = pygame.time.get_ticks() + colorBoostAffectTime
+            colorPowerAlive = False
+            colorNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
+
+def drawColorPowerUp():
+    if colorPowerAlive == True:
+        pygame.draw.rect(screen, (100,50,255),
+                         pygame.Rect(colorPowerX,colorPowerY,25,25))
 
 def updateSpeedPowerUp():
     global speedPowerAlive
@@ -134,22 +188,22 @@ def updateSpeedPowerUp():
             greenPlayer[12] = True #set that the player has a speed boost
             greenPlayer[13] = pygame.time.get_ticks() #time stamp when the player go the speed boost
             speedPowerAlive = False
-            speedNextTimeOnScreen = pygame.time.get_ticks() + speedOnScreenDelay
+            speedNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
         elif blueHitBox.colliderect(speedHitBox):
             bluePlayer[3] = 10 #set the increase the speed
             bluePlayer[12] = True #set that the player has a speed boost
             bluePlayer[13] = pygame.time.get_ticks() #time stamp when the player go the speed boost
             speedPowerAlive = False
-            speedNextTimeOnScreen = pygame.time.get_ticks() + speedOnScreenDelay
+            speedNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
         elif redHitBox.colliderect(speedHitBox):
             redPlayer[3] = 10 #set the increase the speed
             redPlayer[12] = True #set that the player has a speed boost
             redPlayer[13] = pygame.time.get_ticks() #time stamp when the player go the speed boost
             speedPowerAlive = False
-            speedNextTimeOnScreen = pygame.time.get_ticks() + speedOnScreenDelay
+            speedNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
         if pygame.time.get_ticks() > speedNextTimeOnScreen+speedOnScreenTime:
             speedPowerAlive = False
-            speedNextTimeOnScreen = pygame.time.get_ticks() + speedOnScreenDelay
+            speedNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
 
 def drawSpeedPowerUp():
     if speedPowerAlive == True:
@@ -364,6 +418,7 @@ while not done:
         updateScore()
         updateSpeedPowerUp()
         updateReversePowerUp()
+        updateColorPowerUp()
         updatePlayer(redPlayer)
         updatePlayer(bluePlayer)
         updatePlayer(greenPlayer)
@@ -372,6 +427,7 @@ while not done:
         drawMap(map1Background, map1Walls)
         drawSpeedPowerUp()
         drawReversePowerUp()
+        drawColorPowerUp()
         drawPlayer(redPlayer)
         drawPlayer(greenPlayer)
         drawPlayer(bluePlayer)
