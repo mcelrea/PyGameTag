@@ -8,9 +8,11 @@ import random
 #initializes all the modules required for PyGame
 pygame.init()
 pygame.font.init()
+pygame.mixer.init()
 clock = pygame.time.Clock()
 scoreFont = pygame.font.SysFont('Comic Sans MS', 20)
 gameOverFont = pygame.font.SysFont('Comic Sans MS', 160)
+hideLittleMan = pygame.mixer.music.load("hideLittleMan.mp3")
 gameStatus = "playing"
 
 #launch a window of the desired size, screen equals a Surface which is an object
