@@ -12,7 +12,9 @@ pygame.mixer.init()
 clock = pygame.time.Clock()
 scoreFont = pygame.font.SysFont('Comic Sans MS', 20)
 gameOverFont = pygame.font.SysFont('Comic Sans MS', 160)
-hideLittleMan = pygame.mixer.music.load("hideLittleMan.mp3")
+hideLittleMan = pygame.mixer.Sound("hideLittleMan.wav")
+speedBoostSound = pygame.mixer.Sound("mcelreaSpeedBoost.wav")
+reverseControlsSound = pygame.mixer.Sound("reverseControls.wav")
 gameStatus = "playing"
 
 #launch a window of the desired size, screen equals a Surface which is an object
@@ -104,6 +106,7 @@ def updateReversePowerUp():
             bluePlayer[15] = pygame.time.get_ticks()  # time stamp when the player go the reverse boost
             reversePowerAlive = False
             reverseNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
+            pygame.mixer.Sound.play(reverseControlsSound)
         elif blueHitBox.colliderect(reverseHitBox):
             redPlayer[14] = True #set that the player has a reverse boost
             redPlayer[15] = pygame.time.get_ticks() #time stamp when the player go the reverse boost
@@ -111,6 +114,7 @@ def updateReversePowerUp():
             greenPlayer[15] = pygame.time.get_ticks()  # time stamp when the player go the reverse boost
             reversePowerAlive = False
             reverseNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
+            pygame.mixer.Sound.play(reverseControlsSound)
         elif redHitBox.colliderect(reverseHitBox):
             bluePlayer[14] = True #set that the player has a reverse boost
             bluePlayer[15] = pygame.time.get_ticks() #time stamp when the player go the reverse boost
@@ -118,6 +122,7 @@ def updateReversePowerUp():
             greenPlayer[15] = pygame.time.get_ticks()  # time stamp when the player go the reverse boost
             reversePowerAlive = False
             reverseNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
+            pygame.mixer.Sound.play(reverseControlsSound)
         if pygame.time.get_ticks() > reverseNextTimeOnScreen+reverseOnScreenTime:
             reversePowerAlive = False
             reverseNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
@@ -154,16 +159,19 @@ def updateColorPowerUp():
             revertColorTime = pygame.time.get_ticks() + colorBoostAffectTime
             colorPowerAlive = False
             colorNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
+            pygame.mixer.Sound.play(hideLittleMan)
         elif blueHitBox.colliderect(colorHitBox):
             backgroundColor = (0,0,255)
             revertColorTime = pygame.time.get_ticks() + colorBoostAffectTime
             colorPowerAlive = False
             colorNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
+            pygame.mixer.Sound.play(hideLittleMan)
         elif redHitBox.colliderect(colorHitBox):
             backgroundColor = (255,0,0)
             revertColorTime = pygame.time.get_ticks() + colorBoostAffectTime
             colorPowerAlive = False
             colorNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
+            pygame.mixer.Sound.play(hideLittleMan)
 
 def drawColorPowerUp():
     if colorPowerAlive == True:
@@ -191,18 +199,21 @@ def updateSpeedPowerUp():
             greenPlayer[13] = pygame.time.get_ticks() #time stamp when the player go the speed boost
             speedPowerAlive = False
             speedNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
+            pygame.mixer.Sound.play(speedBoostSound)
         elif blueHitBox.colliderect(speedHitBox):
             bluePlayer[3] = 10 #set the increase the speed
             bluePlayer[12] = True #set that the player has a speed boost
             bluePlayer[13] = pygame.time.get_ticks() #time stamp when the player go the speed boost
             speedPowerAlive = False
             speedNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
+            pygame.mixer.Sound.play(speedBoostSound)
         elif redHitBox.colliderect(speedHitBox):
             redPlayer[3] = 10 #set the increase the speed
             redPlayer[12] = True #set that the player has a speed boost
             redPlayer[13] = pygame.time.get_ticks() #time stamp when the player go the speed boost
             speedPowerAlive = False
             speedNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
+            pygame.mixer.Sound.play(speedBoostSound)
         if pygame.time.get_ticks() > speedNextTimeOnScreen+speedOnScreenTime:
             speedPowerAlive = False
             speedNextTimeOnScreen = pygame.time.get_ticks() + random.randint(5000,15000)
